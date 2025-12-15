@@ -82,15 +82,6 @@ Get your Capture Token:
 
 Your completed work will include references to all source iterations, creating a complete provenance chain.
 
-## Cost
-
-Registration costs on Numbers Protocol:
-- **0.025 NUM** per registration
-- **~0.004 NUM** gas per transaction
-- **0.1 NUM/month** for permanent IPFS storage (optional)
-
-Check current NUM price at [CoinGecko](https://www.coingecko.com/en/coins/numbers-protocol)
-
 ## Architecture
 
 Trace follows clean architecture principles with clear separation of concerns:
@@ -133,27 +124,12 @@ Built with:
 - [Next.js](https://nextjs.org/) - React framework
 - [Zustand](https://github.com/pmndrs/zustand) - State management
 
----
-
-**Trace** - Prove your creative journey
-```
-
----
-
-## .env.example
-```
-# Numbers Protocol API Configuration
-# Get your token from: https://capture.numbersprotocol.io/
-NUMBERS_CAPTURE_TOKEN=your_capture_token_here
-```
-
----
 
 ## LICENSE
 ```
 MIT License
 
-Copyright (c) 2025 Ethan Wu
+Copyright (c) 2025 TastyMoonCakes
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
