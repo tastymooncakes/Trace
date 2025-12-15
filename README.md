@@ -103,28 +103,6 @@ This structure makes the codebase:
 - [C2PA Specification](https://c2pa.org/)
 - [IPFS Documentation](https://docs.ipfs.tech/)
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details
-
-## Support
-
-For issues or questions:
-- Open an issue on GitHub
-- Check [Numbers Protocol Discord](https://discord.gg/numbersprotocol)
-
-## Acknowledgments
-
-Built with:
-- [Numbers Protocol](https://numbersprotocol.io/) - Blockchain infrastructure
-- [Next.js](https://nextjs.org/) - React framework
-- [Zustand](https://github.com/pmndrs/zustand) - State management
-
-
 ## LICENSE
 ```
 MIT License
