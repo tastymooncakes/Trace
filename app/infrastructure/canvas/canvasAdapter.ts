@@ -5,21 +5,26 @@ export interface Point {
   y: number;
 }
 
-export function initializeCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Could not get canvas context');
+export function initializeCanvas(
+  canvas: HTMLCanvasElement
+): CanvasRenderingContext2D {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Could not get canvas context");
 
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width;
   canvas.height = rect.height;
 
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
 
   return ctx;
 }
 
-export function beginDrawing(ctx: CanvasRenderingContext2D, point: Point): void {
+export function beginDrawing(
+  ctx: CanvasRenderingContext2D,
+  point: Point
+): void {
   ctx.beginPath();
   ctx.moveTo(point.x, point.y);
 }
@@ -36,19 +41,35 @@ export function drawLine(
   ctx.stroke();
 }
 
-export function clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): void {
+export function clearCanvas(
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D
+): void {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 export async function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('Failed to create blob'))),
-      'image/png'
+      (blob) =>
+        blob ? resolve(blob) : reject(new Error("Failed to create blob")),
+      "image/png"
     );
   });
 }
 
 export function canvasToDataURL(canvas: HTMLCanvasElement): string {
-  return canvas.toDataURL('image/png');
+  return canvas.toDataURL("image/png");
+}
+
+export function drawEraseLine(
+  ctx: CanvasRenderingContext2D,
+  point: Point,
+  brushSize: BrushSize
+): void {
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.lineTo(point.x, point.y);
+  ctx.lineWidth = brushSize;
+  ctx.stroke();
+  ctx.globalCompositeOperation = "source-over";
 }

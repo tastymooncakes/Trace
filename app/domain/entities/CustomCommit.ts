@@ -1,10 +1,16 @@
-export interface SourceAssetReference {
-  nid: string;
-  ipfsUrl: string;
-}
+import { DrawingAction } from "./Action";
 
 export interface CustomCommit {
-  sourceAssets?: SourceAssetReference[];
-  assetType?: string;
-  iterationCount?: number;
+  sourceAssets?: Array<{
+    nid: string;
+    ipfsUrl: string;
+  }>;
+  actionLog?: {
+    actions: DrawingAction[];
+    actionCount: number;
+    checkpointType: "iteration" | "final";
+  };
+  appVersion?: string;
+  provenanceType?: string;
+  [key: string]: unknown;
 }

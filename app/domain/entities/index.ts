@@ -4,3 +4,5 @@ export * from './Catalog';
 export * from './AssetMetadata';
 export * from './CompletedWork';
 export * from './CustomCommit';
+export * from './Action';
+export * from './Session';

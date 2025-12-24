@@ -7,6 +7,8 @@ import { RegistrationService } from "../infrastructure/api/registrationService";
 export function ActionButtons() {
   const clearCanvas = useDrawingStore((state) => state.clearCanvas);
   const exportCanvas = useDrawingStore((state) => state.exportCanvas);
+  const undoAction = useDrawingStore((state) => state.undoAction);
+  const redoAction = useDrawingStore((state) => state.redoAction);
   const registrations = useDrawingStore((state) => state.registrations);
   const isRegistering = useDrawingStore((state) => state.isRegistering);
   const setIsRegistering = useDrawingStore((state) => state.setIsRegistering);
@@ -46,21 +48,16 @@ export function ActionButtons() {
 
     setIsRegistering(true);
     try {
-      // Export current canvas as final composite
       const result = await exportCanvas();
       if (!result) throw new Error('Failed to export canvas');
 
-      // Register with source provenance
       const completedWork = await RegistrationService.registerFinalComposite(
         result.blob,
         result.dataUrl,
         registrations
       );
       
-      // Add to completed works
       addCompletedWork(completedWork);
-      
-      // Clear working state
       clearRegistrations();
       clearCanvas();
       
@@ -76,20 +73,40 @@ export function ActionButtons() {
     if (clearCanvas) clearCanvas();
   };
 
+  const handleUndo = () => {
+    if (undoAction) undoAction();
+  };
+
+  const handleRedo = () => {
+    if (redoAction) redoAction();
+  };
+
   return (
-    <div className="flex gap-4 p-4 bg-[#1A1A1A] rounded-lg">
+    <div className="flex gap-4 p-4 bg-[#1A1A1A] rounded-lg flex-wrap">
       <button
-        onClick={handleSave}
-        disabled={isRegistering}
-        className="px-6 py- bg-[#4F994C] text-white rounded hover:bg-[#4F994C] disabled:bg-gray-600 disabled:cursor-not-allowed"
+        onClick={handleUndo}
+        className="px-6 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
       >
-        {isRegistering ? 'Registering...' : 'Save & Register'}
+        Undo
+      </button>
+      <button
+        onClick={handleRedo}
+        className="px-6 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+      >
+        Redo
       </button>
       <button
         onClick={handleClear}
         className="px-6 py-2 bg-[#FF3300] text-white rounded hover:bg-red-700"
       >
         Clear Canvas
+      </button>
+      <button
+        onClick={handleSave}
+        disabled={isRegistering}
+        className="px-6 py-bg-[#4F994C] text-white rounded hover:bg-[#4F994C] disabled:bg-gray-600 disabled:cursor-not-allowed"
+      >
+        {isRegistering ? 'Registering...' : 'Save & Register'}
       </button>
       <button
         onClick={handleFinish}

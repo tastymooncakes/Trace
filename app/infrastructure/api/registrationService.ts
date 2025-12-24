@@ -1,104 +1,135 @@
-import { AssetMetadata, Registration } from "@/app/domain/entities";
-import { CompletedWork } from "@/app/domain/entities/CompletedWork";
-
-interface RegisterResponse {
-  success: boolean;
-  nid: string;
-  timestamp: string;
-}
+import {
+  Registration,
+  AssetMetadata,
+  CustomCommit,
+  CompletedWork,
+} from "@/app/domain/entities";
+import { actionLogger } from "../db/actionLogger";
 
 export class RegistrationService {
   static async registerDrawing(
     blob: Blob,
-    imageDataUrl: string
+    dataUrl: string
   ): Promise<Registration> {
+    const actionsSinceCheckpoint =
+      await actionLogger.getActionsSinceLastCheckpoint();
+
     const metadata: AssetMetadata = {
       proof: {
         timestamp: new Date().toISOString(),
-        mimeType: 'image/png',
+        mimeType: "image/png",
       },
       information: {
-        type: 'drawing',
-        description: 'Digital drawing with C2PA credentials',
-        source: 'C2PA Drawing App',
+        type: "drawing",
+        description: "Drawing checkpoint",
+        source: "Trace App",
       },
     };
 
-    const formData = new FormData();
-    formData.append('file', blob, `drawing-${Date.now()}.png`);
-    formData.append('metadata', JSON.stringify(metadata));
+    const customCommit: CustomCommit = {
+      // Summary fields (more likely to be preserved)
+      traceActionCount: actionsSinceCheckpoint.length,
+      traceCheckpointType: "iteration",
+      traceAppVersion: "1.0.0",
+      traceProvenanceType: "creative-process",
 
-    const response = await fetch('/api/register', {
-      method: 'POST',
+      // Full action log with unique prefix
+      traceActionLog: JSON.stringify(actionsSinceCheckpoint),
+    };
+
+    const formData = new FormData();
+    formData.append("file", blob);
+    formData.append("metadata", JSON.stringify(metadata));
+    formData.append("nit_commit_custom", JSON.stringify(customCommit));
+
+    const response = await fetch("/api/register", {
+      method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Registration failed');
+      throw new Error(error.error || "Registration failed");
     }
 
-    const data: RegisterResponse = await response.json();
+    const data = await response.json();
+
+    await actionLogger.addCheckpoint(data.nid, dataUrl);
 
     return {
       nid: data.nid,
       timestamp: data.timestamp,
-      imageData: imageDataUrl,
+      imageData: dataUrl,
     };
   }
 
   static async registerFinalComposite(
     blob: Blob,
-    imageDataUrl: string,
-    sourceRegistrations: Registration[]
+    dataUrl: string,
+    sourceIterations: Registration[]
   ): Promise<CompletedWork> {
+    const allActions = await actionLogger.getSessionActions();
+
     const metadata: AssetMetadata = {
       proof: {
         timestamp: new Date().toISOString(),
-        mimeType: 'image/png',
+        mimeType: "image/png",
       },
       information: {
-        type: 'drawing',
-        description: 'Final composite drawing with source provenance',
-        source: 'C2PA Drawing App',
+        type: "catalog",
+        description: "Final composite with full provenance chain",
+        source: "Trace App",
       },
     };
 
-    // Build source assets with IPFS URLs
-    const sourceAssets = sourceRegistrations.map(reg => ({
-      nid: reg.nid,
-      ipfsUrl: `https://ipfs-pin.numbersprotocol.io/ipfs/${reg.nid}`
-    }));
+    const customCommit: CustomCommit = {
+      sourceAssets: sourceIterations.map((iter) => ({
+        nid: iter.nid,
+        ipfsUrl: `https://ipfs-pin.numbersprotocol.io/ipfs/${iter.nid}`,
+      })),
 
-    const customCommit = {
-      sourceAssets,
-      assetType: 'final_composite',
-      iterationCount: sourceRegistrations.length
+      // Summary fields
+      traceActionCount: allActions.length,
+      traceCheckpointType: "final",
+      traceAppVersion: "1.0.0",
+      traceProvenanceType: "creative-process-complete",
+
+      // Full action log as stringified JSON
+      traceActionLog: JSON.stringify(allActions),
     };
 
     const formData = new FormData();
-    formData.append('file', blob, `final-composite-${Date.now()}.png`);
-    formData.append('metadata', JSON.stringify(metadata));
-    formData.append('nit_commit_custom', JSON.stringify(customCommit));
+    formData.append("file", blob);
+    formData.append("metadata", JSON.stringify(metadata));
+    formData.append("nit_commit_custom", JSON.stringify(customCommit));
 
-    const response = await fetch('/api/register', {
-      method: 'POST',
+    const response = await fetch("/api/register", {
+      method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Final composite registration failed');
+      throw new Error(error.error || "Registration failed");
     }
 
-    const data: RegisterResponse = await response.json();
+    const data = await response.json();
+
+    // CLEAR THE SESSION AFTER SUCCESSFUL REGISTRATION
+    await actionLogger.clearSession();
+
+    // START A NEW SESSION
+    await actionLogger.initSession();
 
     return {
       nid: data.nid,
       timestamp: data.timestamp,
-      imageData: imageDataUrl,
-      sourceAssets,
-      iterationCount: sourceRegistrations.length,
+      imageData: dataUrl,
+      iterationCount: sourceIterations.length,
+      sourceAssets: sourceIterations.map((iter) => ({
+        nid: iter.nid,
+        ipfsUrl: `https://ipfs-pin.numbersprotocol.io/ipfs/${iter.nid}`,
+      })),
     };
   }
 }
