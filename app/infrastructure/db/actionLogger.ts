@@ -52,6 +52,7 @@ export class ActionLogger {
       color?: Color;
       brushSize?: BrushSize;
       undoActionId?: number;
+      imageData?: string; // Add this line
     }
   ): Promise<number> {
     if (!this.currentSessionId) {

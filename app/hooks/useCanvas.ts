@@ -26,7 +26,8 @@ export function useCanvas() {
 
     const allActions = await actionLogger.getSessionActions();
     const visibleActions = CanvasReplay.getVisibleActions(allActions);
-    CanvasReplay.replayActions(
+
+    await CanvasReplay.replayActions(
       canvasRef.current,
       ctxRef.current,
       visibleActions
@@ -182,23 +183,39 @@ export function useCanvas() {
   const jumpToAction = useCallback(async (targetActionId: number) => {
     if (!canvasRef.current || !ctxRef.current) return;
 
-    // Get all actions
     const allActions = await actionLogger.getSessionActions();
-
-    // Get actions up to and including the target
     const actionsUpToTarget = allActions.filter(
       (action) => action.id && action.id <= targetActionId
     );
 
-    // Get visible actions (respecting undo/redo)
     const visibleActions = CanvasReplay.getVisibleActions(actionsUpToTarget);
 
-    // Replay only those actions
     CanvasReplay.replayActions(
       canvasRef.current,
       ctxRef.current,
       visibleActions
     );
+  }, []);
+
+  const importImage = useCallback(async (imageData: string) => {
+    if (!canvasRef.current || !ctxRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = ctxRef.current;
+
+    // Load and draw the image
+    const img = new Image();
+    img.onload = async () => {
+      // Clear canvas first
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw imported image scaled to canvas
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      // Log import action
+      await actionLogger.logAction("import", { imageData });
+    };
+    img.src = imageData;
   }, []);
 
   const exportCanvas = useCallback(async () => {
@@ -218,6 +235,7 @@ export function useCanvas() {
     handleUndo,
     handleRedo,
     jumpToAction,
+    importImage, // Add this line
     exportCanvas,
   };
 }

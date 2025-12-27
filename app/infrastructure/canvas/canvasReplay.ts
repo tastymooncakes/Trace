@@ -7,11 +7,11 @@ import {
 } from "./canvasAdapter";
 
 export class CanvasReplay {
-  static replayActions(
+  static async replayActions(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
     actions: DrawingAction[]
-  ): void {
+  ): Promise<void> {
     clearCanvasAdapter(canvas, ctx);
 
     for (const action of actions) {
@@ -30,7 +30,7 @@ export class CanvasReplay {
           }
           break;
 
-        case "erase": // ADD THIS CASE
+        case "erase":
           if (action.params.points && action.params.points.length > 0) {
             beginDrawing(ctx, action.params.points[0]);
             for (let i = 1; i < action.params.points.length; i++) {
@@ -45,6 +45,24 @@ export class CanvasReplay {
 
         case "clear":
           clearCanvasAdapter(canvas, ctx);
+          break;
+
+        case "import":
+          if (action.params.imageData) {
+            // Make image loading synchronous with a Promise
+            await new Promise<void>((resolve) => {
+              const img = new Image();
+              img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve();
+              };
+              img.onerror = () => {
+                console.error("Failed to load image");
+                resolve(); // Still resolve to continue replay
+              };
+              img.src = action.params.imageData!;
+            });
+          }
           break;
 
         case "undo":

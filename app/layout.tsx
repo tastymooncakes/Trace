@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,15 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trace - Provenance for Digital Art",
-  description: "Create digital art with verifiable blockchain provenance. Track iterations and prove authenticity with C2PA content credentials.",
-  keywords: ["digital art", "provenance", "C2PA", "blockchain", "NFT", "content credentials"],
-  authors: [{ name: "Your Name" }],
-  openGraph: {
-    title: "Trace - Provenance for Digital Art",
-    description: "Create digital art with verifiable blockchain provenance",
-    type: "website",
-  },
+  title: "Trace - Provenance-First Creative Tool",
+  description:
+    "Record, visualize, and cryptographically anchor your creative process",
 };
 
 export default function RootLayout({
@@ -31,10 +26,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
+        <Toaster
+          theme="dark"
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: "#252526",
+              border: "1px solid #2D2D30",
+              color: "#CCCCCC",
+            },
+          }}
+        />
       </body>
     </html>
   );

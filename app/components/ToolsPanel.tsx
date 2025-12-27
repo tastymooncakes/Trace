@@ -1,6 +1,7 @@
 "use client";
 
 import { BrushSize } from "../domain/entities";
+import { toast } from "sonner";
 import { useDrawingStore } from "../hooks/useDrawingStore";
 import {
   Pencil,
@@ -62,11 +63,15 @@ export function ToolsPanel() {
       );
 
       addRegistration(registration);
-      alert(`Registered! NID: ${registration.nid}`);
+      toast.success("Checkpoint saved to blockchain!", {
+        description: `NID: ${registration.nid.slice(0, 12)}...`,
+        duration: 5000,
+      });
     } catch (error) {
-      alert(
-        `Error: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      toast.error("Failed to save checkpoint", {
+        description: error instanceof Error ? error.message : "Unknown error",
+        duration: 5000,
+      });
     } finally {
       setIsRegistering(false);
     }
@@ -76,9 +81,10 @@ export function ToolsPanel() {
     if (!exportCanvas || !clearCanvas) return;
 
     if (registrations.length === 0) {
-      alert(
-        "No registrations to include. Draw and register some iterations first!"
-      );
+      toast.warning("No checkpoints yet", {
+        description: "Save at least one checkpoint before creating final work",
+        duration: 4000,
+      });
       return;
     }
 
@@ -100,13 +106,17 @@ export function ToolsPanel() {
       clearRegistrations();
       clearCanvas();
 
-      alert(
-        `Final composite created! NID: ${completedWork.nid}\nSource iterations: ${completedWork.iterationCount}`
-      );
+      toast.success("Final work registered!", {
+        description: `${
+          completedWork.iterationCount
+        } checkpoints linked. NID: ${completedWork.nid.slice(0, 12)}...`,
+        duration: 6000,
+      });
     } catch (error) {
-      alert(
-        `Error: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      toast.error("Failed to create final work", {
+        description: error instanceof Error ? error.message : "Unknown error",
+        duration: 5000,
+      });
     } finally {
       setIsRegistering(false);
     }

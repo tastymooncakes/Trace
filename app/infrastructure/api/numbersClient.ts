@@ -6,7 +6,7 @@ export class NumbersProtocolClient implements INumbersClient {
 
   constructor(captureToken: string) {
     if (!captureToken) {
-      throw new Error('Capture token is required');
+      throw new Error("Capture token is required");
     }
     this.captureToken = captureToken;
   }
@@ -17,26 +17,40 @@ export class NumbersProtocolClient implements INumbersClient {
     nitCommitCustom?: CustomCommit
   ): Promise<string> {
     const formData = new FormData();
-    formData.append('asset_file', blob, `drawing-${Date.now()}.png`);
-    formData.append('meta', JSON.stringify(metadata));
-    formData.append('caption', metadata.information.description);
-    formData.append('abstract', 'Drawing Registration');
-    
+    formData.append("asset_file", blob, `drawing-${Date.now()}.png`);
+    formData.append("meta", JSON.stringify(metadata));
+    formData.append("caption", metadata.information.description);
+    formData.append("abstract", "Drawing Registration");
+
     if (nitCommitCustom) {
-      formData.append('nit_commit_custom', JSON.stringify(nitCommitCustom));
+      formData.append("nit_commit_custom", JSON.stringify(nitCommitCustom));
     }
 
-    const response = await fetch('https://api.numbersprotocol.io/api/v3/assets/', {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${this.captureToken}`,
-      },
-      body: formData,
-    });
+    const response = await fetch(
+      "https://api.numbersprotocol.io/api/v3/assets/",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `token ${this.captureToken}`,
+        },
+        body: formData,
+      }
+    );
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Registration failed');
+      const errorText = await response.text();
+      console.error("Numbers Protocol API Error:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
+
+      try {
+        const error = JSON.parse(errorText);
+        throw new Error(error.message || error.error || "Registration failed");
+      } catch {
+        throw new Error(`Registration failed: ${response.status} ${errorText}`);
+      }
     }
 
     const data = await response.json();

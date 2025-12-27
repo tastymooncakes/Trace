@@ -15,13 +15,14 @@ interface CanvasActions {
   undoAction: () => void;
   redoAction: () => void;
   jumpToAction: (actionId: number) => void;
+  importImage: (imageData: string) => void;
 }
 
 interface DrawingStore {
   // Drawing state
   currentColor: Color;
   brushSize: BrushSize;
-  drawMode: DrawMode; // ADD THIS
+  drawMode: DrawMode;
 
   // Registration state (work in progress)
   registrations: Registration[];
@@ -35,13 +36,13 @@ interface DrawingStore {
   exportCanvas: (() => Promise<{ blob: Blob; dataUrl: string } | null>) | null;
   undoAction: (() => void) | null;
   redoAction: (() => void) | null;
-
   jumpToAction: ((actionId: number) => void) | null;
+  importImage: ((imageData: string) => void) | null; // Fixed this line
 
   // Actions
   setColor: (color: Color) => void;
   setBrushSize: (size: BrushSize) => void;
-  setDrawMode: (mode: DrawMode) => void; // ADD THIS
+  setDrawMode: (mode: DrawMode) => void;
   addRegistration: (registration: Registration) => void;
   addCompletedWork: (work: CompletedWork) => void;
   clearRegistrations: () => void;
@@ -53,7 +54,7 @@ export const useDrawingStore = create<DrawingStore>((set) => ({
   // Initial state
   currentColor: "#000000",
   brushSize: 5,
-  drawMode: "draw", // ADD THIS
+  drawMode: "draw",
   registrations: [],
   completedWorks: [],
   isRegistering: false,
@@ -62,11 +63,12 @@ export const useDrawingStore = create<DrawingStore>((set) => ({
   undoAction: null,
   redoAction: null,
   jumpToAction: null,
+  importImage: null, // Add this line
 
   // Actions
   setColor: (color) => set({ currentColor: color }),
   setBrushSize: (size) => set({ brushSize: size }),
-  setDrawMode: (mode) => set({ drawMode: mode }), // ADD THIS
+  setDrawMode: (mode) => set({ drawMode: mode }),
   addRegistration: (registration) =>
     set((state) => ({
       registrations: [...state.registrations, registration],
@@ -84,5 +86,6 @@ export const useDrawingStore = create<DrawingStore>((set) => ({
       undoAction: actions.undoAction,
       redoAction: actions.redoAction,
       jumpToAction: actions.jumpToAction,
+      importImage: actions.importImage, // Add this line
     }),
 }));

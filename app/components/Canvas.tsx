@@ -16,6 +16,7 @@ export function Canvas() {
     handleRedo,
     exportCanvas,
     jumpToAction,
+    importImage,
   } = useCanvas();
   const currentColor = useDrawingStore((state) => state.currentColor);
   const brushSize = useDrawingStore((state) => state.brushSize);
@@ -36,6 +37,7 @@ export function Canvas() {
       undoAction: handleUndo,
       redoAction: handleRedo,
       jumpToAction,
+      importImage, // Add this line
     });
   }, [
     initCanvas,
@@ -45,6 +47,7 @@ export function Canvas() {
     exportCanvas,
     setCanvasActions,
     jumpToAction,
+    importImage,
   ]);
 
   // Ensure canvas internal size matches display size
