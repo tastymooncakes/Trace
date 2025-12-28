@@ -9,7 +9,11 @@ import { actionLogger } from "../db/actionLogger";
 export class RegistrationService {
   static async registerDrawing(
     blob: Blob,
-    dataUrl: string
+    dataUrl: string,
+    artistProfile?: {
+      artistName?: string;
+      title?: string;
+    }
   ): Promise<Registration> {
     const actionsSinceCheckpoint =
       await actionLogger.getActionsSinceLastCheckpoint();
@@ -27,13 +31,21 @@ export class RegistrationService {
     };
 
     const customCommit: CustomCommit = {
-      // Summary fields (more likely to be preserved)
+      // AssetTree fields (override defaults)
+      ...(artistProfile?.artistName && {
+        assetCreator: artistProfile.artistName.slice(0, 15),
+      }), // Max 15 chars
+      ...(artistProfile?.title && {
+        headline: artistProfile.title.slice(0, 25),
+      }), // Max 25 chars
+
+      // Summary fields
       traceActionCount: actionsSinceCheckpoint.length,
       traceCheckpointType: "iteration",
       traceAppVersion: "1.0.0",
       traceProvenanceType: "creative-process",
 
-      // Full action log with unique prefix
+      // Full action log
       traceActionLog: JSON.stringify(actionsSinceCheckpoint),
     };
 
@@ -66,7 +78,12 @@ export class RegistrationService {
   static async registerFinalComposite(
     blob: Blob,
     dataUrl: string,
-    sourceIterations: Registration[]
+    sourceIterations: Registration[],
+    artistProfile?: {
+      artistName?: string;
+      title?: string;
+      description?: string;
+    }
   ): Promise<CompletedWork> {
     const allActions = await actionLogger.getSessionActions();
 
@@ -83,6 +100,17 @@ export class RegistrationService {
     };
 
     const customCommit: CustomCommit = {
+      // AssetTree fields (override defaults)
+      ...(artistProfile?.artistName && {
+        assetCreator: artistProfile.artistName.slice(0, 15),
+      }), // Max 15 chars
+      ...(artistProfile?.title && {
+        headline: artistProfile.title.slice(0, 25),
+      }), // Max 25 chars
+      ...(artistProfile?.description && {
+        abstract: artistProfile.description.slice(0, 500),
+      }), // Max 500 chars
+
       sourceAssets: sourceIterations.map((iter) => ({
         nid: iter.nid,
         ipfsUrl: `https://ipfs-pin.numbersprotocol.io/ipfs/${iter.nid}`,
@@ -94,7 +122,7 @@ export class RegistrationService {
       traceAppVersion: "1.0.0",
       traceProvenanceType: "creative-process-complete",
 
-      // Full action log as stringified JSON
+      // Full action log
       traceActionLog: JSON.stringify(allActions),
     };
 

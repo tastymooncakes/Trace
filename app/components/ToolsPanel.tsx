@@ -57,9 +57,19 @@ export function ToolsPanel() {
       const result = await exportCanvas();
       if (!result) throw new Error("Failed to export canvas");
 
+      // Get artist profile from localStorage
+      const artistName =
+        localStorage.getItem("trace_artist_name") || "Anonymous";
+      const defaultTitle =
+        localStorage.getItem("trace_default_title") || "Untitled Artwork";
+
       const registration = await RegistrationService.registerDrawing(
         result.blob,
-        result.dataUrl
+        result.dataUrl,
+        {
+          artistName,
+          title: `${defaultTitle} - Checkpoint ${registrations.length + 1}`,
+        }
       );
 
       addRegistration(registration);
@@ -96,10 +106,24 @@ export function ToolsPanel() {
       const result = await exportCanvas();
       if (!result) throw new Error("Failed to export canvas");
 
+      // Get artist profile from localStorage
+      const artistName =
+        localStorage.getItem("trace_artist_name") || "Anonymous";
+      const defaultTitle =
+        localStorage.getItem("trace_default_title") || "Untitled Artwork";
+      const defaultDescription =
+        localStorage.getItem("trace_default_description") ||
+        "Created with Trace";
+
       const completedWork = await RegistrationService.registerFinalComposite(
         result.blob,
         result.dataUrl,
-        registrations
+        registrations,
+        {
+          artistName,
+          title: defaultTitle,
+          description: defaultDescription,
+        }
       );
 
       addCompletedWork(completedWork);

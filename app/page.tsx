@@ -8,9 +8,10 @@ import { ConfirmModal } from "./components/ConfirmModal";
 import { ImportModal } from "./components/ImportModal";
 import { useDrawingStore } from "./hooks/useDrawingStore";
 import { actionLogger } from "./infrastructure/db/actionLogger";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, Settings } from "lucide-react";
 import { PropertiesPanel } from "./components/PropertiesPanels";
 import { toast } from "sonner";
+import { SettingsModal } from "./components/SettingsModal";
 
 export default function Home() {
   const jumpToAction = useDrawingStore((state) => state.jumpToAction);
@@ -21,6 +22,7 @@ export default function Home() {
 
   const [showNewDrawingModal, setShowNewDrawingModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [sessionKey, setSessionKey] = useState(0);
 
   const handleNewDrawingClick = async () => {
@@ -75,6 +77,12 @@ export default function Home() {
         </div>
 
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowSettingsModal(true)}
+            className="px-3 py-1.5 bg-[#3C3C3C] text-gray-300 hover:bg-[#464646] rounded text-sm flex items-center gap-2"
+          >
+            <Settings size={16} />
+          </button>
           <button
             onClick={() => setShowImportModal(true)}
             className="px-4 py-1.5 bg-[#3C3C3C] text-white hover:bg-[#464646] rounded text-sm flex items-center gap-2"
@@ -140,6 +148,12 @@ export default function Home() {
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
         onImport={handleImport}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
       />
     </div>
   );
